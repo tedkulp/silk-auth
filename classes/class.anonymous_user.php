@@ -21,7 +21,7 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 // THE SOFTWARE.
 
-namespace silk\auth;
+namespace extensions\silk\auth;
 
 /**
  * Class to represent an anonymous (not logged in) user
@@ -36,7 +36,7 @@ class AnonymousUser extends User
 	function __construct()
 	{
 		parent::__construct();
-		$this->groups = array(orm('group')->find_by_name('Anonymous'));
+		$this->groups = Group::all(array('name' => 'Anonymous'), true);
 	}
 	
 	function groups()
@@ -61,4 +61,3 @@ class AnonymousUser extends User
 }
 
 # vim:ts=4 sw=4 noet
-?>

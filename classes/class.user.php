@@ -21,9 +21,9 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 // THE SOFTWARE.
 
-namespace silk\auth;
+namespace extensions\silk\auth;
 
-use \silk\orm\ActiveRecord;
+use \silk\database\datamapper\DataMapper;
 
 /**
  * Generic user class.  This can be used for any logged in user or user related function.
@@ -31,7 +31,7 @@ use \silk\orm\ActiveRecord;
  * @author Ted Kulp
  * @since 1.0
  **/
-class User extends ActiveRecord
+class User extends DataMapper
 {
 	var $params = array('id' => -1, 'username' => '', 'password' => '', 'first_name' => '', 'last_name' => '', 'email' => '', 'active' => false);
 	var $table = 'users';
@@ -47,12 +47,11 @@ class User extends ActiveRecord
 
 	public function validate()
 	{
-		
 		// Username validation
 		if ($this->username != '')
 		{
 			// Make sure the name is unique
-			$result = $this->find_by_username($this->username);
+			$result = $this->first(array('username' => $this->username), true);
 			if ($result)
 			{
 				if ($result->id != $this->id)
@@ -104,7 +103,7 @@ class User extends ActiveRecord
 		//Make sure the open id is unique
 		if ($this->openid != '')
 		{
-			$result = $this->find_by_openid($this->openid);
+			$result = $this->first(array('openid' => $this->openid), true);
 			if ($result)
 			{
 				if ($result->id != $this->id)
@@ -131,7 +130,7 @@ class User extends ActiveRecord
 	public function set_password($password)
 	{
 		//Set params directly so that we don't get caught in a loop
-		$this->params['password'] = \silk\auth\UserSession::encode_password( $password );
+		$this->params['password'] = UserSession::encode_password($password);
 	}
 	
 	//Callback handlers
@@ -182,4 +181,3 @@ class User extends ActiveRecord
 }
 
 # vim:ts=4 sw=4 noet
-?>

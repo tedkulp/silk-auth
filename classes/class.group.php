@@ -21,9 +21,9 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 // THE SOFTWARE.
 
-namespace silk\auth;
+namespace extensions\silk\auth;
 
-use \silk\orm\ActiveRecord;
+use \silk\database\datamapper\DataMapper;
 
 /**
  * Represents a user group in the database.
@@ -31,7 +31,7 @@ use \silk\orm\ActiveRecord;
  * @author Ted Kulp
  * @since 1.0
  **/
-class Group extends ActiveRecord
+class Group extends DataMapper
 {
 	var $params = array('id' => -1, 'name' => '', 'active' => true);
 //	var $field_maps = array('group_name' => 'name');
@@ -55,7 +55,7 @@ class Group extends ActiveRecord
 		if ($this->name != '')
 		{
 			// Make sure the name is unique
-			$result = $this->find_by_name($this->name);
+			$result = $this->first(array('name' => $this->name), true);
 			if ($result)
 			{
 				if ($result->id != $this->id)
@@ -76,8 +76,8 @@ class Group extends ActiveRecord
 	{
 		if ($this->id > -1)
 		{
-			$date = db()->DBTimeStamp(time());
-			return db()->Execute('INSERT INTO ' . db_prefix() . "user_groups (user_id, group_id, create_date, modified_date) VALUES (?,?,{$date},{$date})", array($user->id, $this->id));
+			$date = db()->timestamp(time());
+			return db()->execute_sql("INSERT INTO {user_groups} (user_id, group_id, create_date, modified_date) VALUES (?,?,{$date},{$date})", array($user->id, $this->id));
 		}
 		
 		return false;
@@ -87,7 +87,7 @@ class Group extends ActiveRecord
 	{
 		if ($this->id > -1)
 		{
-			return db()->Execute('DELETE FROM '.db_prefix().'user_groups WHERE user_id = ? AND group_id = ?', array($user->id, $this->id));
+			return db()->execute_sql('DELETE FROM {user_groups} WHERE user_id = ? AND group_id = ?', array($user->id, $this->id));
 		}
 
 		return false;
@@ -112,7 +112,7 @@ class Group extends ActiveRecord
 	
 	public function before_delete()
 	{
-		db()->Execute('DELETE FROM '.db_prefix().'user_groups WHERE group_id = ?', array($this->id));
+		db()->execute_sql('DELETE FROM {user_groups} WHERE group_id = ?', array($this->id));
 		//SilkEvents::send_event('Core', 'DeleteGroupPre', array('group' => &$this));
 	}
 	
@@ -132,7 +132,7 @@ class Group extends ActiveRecord
 		}
 		
 
-		$groups = \silk\auth\Group::find_all(array('order' => 'name ASC'));
+		$groups = Group::all()->order('name ASC');
 		foreach ($groups as $group)
 		{
 			$result[$group->id] = $group->name;
@@ -143,4 +143,3 @@ class Group extends ActiveRecord
 }
 
 # vim:ts=4 sw=4 noet
-?>

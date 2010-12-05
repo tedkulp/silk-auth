@@ -21,7 +21,7 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 // THE SOFTWARE.
 
-namespace silk\auth;
+namespace extensions\silk\auth;
 
 use \silk\core\Object;
 use \silk\action\Request;
@@ -45,6 +45,7 @@ class UserSession extends Object
 	{
 		parent::__construct();
 		$this->params = $params;
+		$this->extension_dir = dirname(dirname(__FILE__));
 		self::get_current_user_from_session();
 	}
 
@@ -69,7 +70,7 @@ class UserSession extends Object
 			{
 				$esc_identity = htmlentities($response->getDisplayIdentifier());
 				
-				$user = orm('user')->find_by_openid($esc_identity);
+				$user = User::first(array('openid' => $esc_identity), true);
 				if ($user != null)
 				{
 					self::$current_user = $user;
@@ -86,7 +87,7 @@ class UserSession extends Object
 		{
 			if ($this->params['username'] != '' && $this->params['password'] != '') //Username/password entered
 			{
-				$user = \silk\auth\User::find_by_username( $this->params['username'] );
+				$user = User::first(array('username' => $this->params['username']), true);
 				if ($user != null)
 				{
 					//Add salt
@@ -146,7 +147,7 @@ class UserSession extends Object
 	
 	static public function include_openid()
 	{
-		$path = join_path(SILK_LIB_DIR, 'openid');
+		$path = join_path($this->extension_dir, 'lib', 'openid');
 		silk()->add_include_path($path);
 		include_once(join_path('Auth', 'OpenID', 'Consumer.php'));
 		include_once(join_path('Auth', 'OpenID', 'FileStore.php'));
@@ -174,4 +175,3 @@ class UserSession extends Object
 }
 
 # vim:ts=4 sw=4 noet
-?>
